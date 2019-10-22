@@ -36,7 +36,7 @@ val menuReader: JsonReader<Menu> = {
 
 val modelReader: JsonReader<Model> = {
     Model(
-        menu = obj("menu", menuReader)
+        menu = obj("menu", by = menuReader)
     )
 }
 
