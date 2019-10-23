@@ -19,39 +19,50 @@ inline fun <reified N, T> JsonNode.read(key: String, type: String, f: (N) -> T):
 inline fun <reified N, T> JsonNode.readOpt(key: String, type: String, f: (N) -> T): T? =
     when (val n = this[key]) {
         is N -> f(n)
-        null -> null
+        null, is NullNode -> null
         else -> throw JsonReadError("expected $type at '$key'", this)
     }
 
+val stringValue = { n: TextNode -> n.asText() }
+val intValue = { n: IntNode -> n.asInt() }
+val booleanValue = { n: BooleanNode -> n.asBoolean() }
+
 fun JsonNode.string(key: String): String =
-    read(key, "a string") { n: TextNode -> n.asText() }
+    read(key, "a string", stringValue)
 
 fun JsonNode.optionalString(key: String): String? =
-    readOpt(key, "a string") { n: TextNode -> n.asText() }
+    readOpt(key, "a string", stringValue)
 
 fun JsonNode.int(key: String): Int =
-    read(key, "an integer") { n: IntNode -> n.asInt() }
+    read(key, "an integer", intValue)
 
 fun JsonNode.optionalInt(key: String): Int? =
-    readOpt(key, "an integer") { n: IntNode -> n.asInt() }
+    readOpt(key, "an integer", intValue)
 
 fun JsonNode.boolean(key: String): Boolean =
-    read(key, "a boolean") { n: BooleanNode -> n.asBoolean() }
+    read(key, "a boolean", booleanValue)
 
 fun JsonNode.optionalBoolean(key: String): Boolean? =
-    readOpt(key, "a boolean") { n: BooleanNode -> n.asBoolean() }
+    readOpt(key, "a boolean", booleanValue)
 
-fun <T> JsonNode.array(key: String, by: JsonReader<T>): List<T> =
-    read(key, "an array") { n: ArrayNode -> n.map(by) }
+fun <N: JsonNode, T> JsonNode.array(key: String, f: (N) -> T): List<T> =
+    read(key, "an array") { n: ArrayNode -> n.map { f(it as N) } }
 
-fun <T> JsonNode.optionalArray(key: String, by: JsonReader<T>): List<T>? =
-    readOpt(key, "an array") { n: ArrayNode -> n.map(by) }
+//fun <T> JsonNode.array(key: String, by: JsonReader<T>): List<T> =
+//    read(key, "an array") { n: ArrayNode -> n.map(by) }
+//
+//fun <T> JsonNode.optionalArray(key: String, by: JsonReader<T>): List<T>? =
+//    readOpt(key, "an array") { n: ArrayNode -> n.map(by) }
 
 inline fun <reified T> JsonNode.obj(key: String, by: (JsonNode) -> T): T =
     read(key, "a ${T::class}", by)
 
 inline fun <reified T> JsonNode.optionalObj(key: String, by: (JsonNode) -> T): T? =
     readOpt(key, "a ${T::class}", by)
+
+operator fun <T> JsonReader<T>.invoke(key: String): JsonReader<T> = {
+    this[key]?.let(this@invoke) ?: throw JsonReadError("expected key '$key", this)
+}
 
 
 // ----

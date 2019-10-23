@@ -9,17 +9,19 @@ import java.io.StringWriter
 class JsonCombinatorsSpec : StringSpec({
 
     val json = """
-{"menu": {
-  "id": "file",
-  "value": "File",
-  "popup": {
-    "menuitem": [
-      {"value": "New", "onclick": "CreateNewDoc()", "order": 1},
-      {"value": "Open", "onclick": "OpenDoc()", "order": 2},
-      {"value": "Close", "onclick": "CloseDoc()", "order": 3}
+{
+    "name": "foo",
+    "description": null,
+    "count": 42,
+    "size": 99,
+    "enabled": true,
+    "hidden": null,
+    "tags": ["abc", "def", "ghi"],
+    "widgets": [
+        { "type": "frumbler", "width": 16, "height": 22 },
+        { "type": "hammerklug", "width": 73, "height": 19 }
     ]
-  }
-}}
+}
 """
 
     fun parse(input: String): JsonNode {
@@ -37,17 +39,14 @@ class JsonCombinatorsSpec : StringSpec({
     "can read example json" {
         val model = modelReader(parse(json))
         model shouldBe Model(
-            menu = Menu(
-                id = "file",
-                value = "File",
-                popup = Popup(
-                    menuitem = listOf(
-                        MenuItem(value = "New", onclick = "CreateNewDoc()", order = 1),
-                        MenuItem(value = "Open", onclick = "OpenDoc()", order = 2),
-                        MenuItem(value = "Close", onclick = "CloseDoc()", order = 3)
-                    )
-                )
-            )
+            name = "foo",
+            description = null,
+            count = 42,
+            size = 99,
+            enabled = true,
+            hidden = null,
+            tags = listOf("abc", "def", "ghi"),
+            widgets = listOf(Widget("frumbler", 16, 22), Widget("hammerklug", 73, 19))
         )
     }
 

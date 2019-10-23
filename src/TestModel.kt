@@ -1,64 +1,59 @@
 
-data class MenuItem(val value: String, val onclick: String, val order: Int)
+data class Widget(
+    val type: String,
+    val width: Int,
+    val height: Int
+)
 
-data class Popup(val menuitem: List<MenuItem>)
-
-data class Menu(val id: String, val value: String, val popup: Popup)
-
-data class Model(val menu: Menu)
-
-val menuItemReader: JsonReader<MenuItem> = {
-    MenuItem(
-        value = string("value"),
-        onclick = string("onclick"),
-        order = int("order")
-    )
-}
-
-val menuItemWriter: JsonWriter<MenuItem> = {
-    jsonObject(
-        "value" to value,
-        "onclick" to onclick,
-        "order" to order
-    )
-}
-
-val popupReader: JsonReader<Popup> = {
-    Popup(
-        menuitem = array("menuitem", menuItemReader)
-    )
-}
-
-val popupWriter: JsonWriter<Popup> = {
-    jsonObject(
-        "menuitem" to jsonArray(menuitem, menuItemWriter)
-    )
-}
-
-val menuReader: JsonReader<Menu> = {
-    Menu(
-        id = string("id"),
-        value = string("value"),
-        popup = obj("popup", popupReader)
-    )
-}
-
-val menuWriter: JsonWriter<Menu> = {
-    jsonObject(
-        "id" to id,
-        "value" to value,
-        "popup" to popupWriter(popup)
-    )
-}
+data class Model(
+    val name: String,
+    val description: String?,
+    val count: Int,
+    val size: Int?,
+    val enabled: Boolean,
+    val hidden: Boolean?,
+    val tags: List<String>,
+    val widgets: List<Widget>
+)
 
 val modelReader: JsonReader<Model> = {
     Model(
-        menu = obj("menu", by = menuReader)
+        name = string("name"),
+        description = optionalString("description"),
+        count = int("count"),
+        size = optionalInt("size"),
+        enabled = boolean("enabled"),
+        hidden = optionalBoolean("hidden"),
+        tags = array("tags", stringValue),
+        widgets = array("widgets", widgetReader)
+    )
+}
+
+val widgetReader: JsonReader<Widget> = {
+    Widget(
+        type = string("type"),
+        width = int("width"),
+        height = int("height")
     )
 }
 
 val modelWriter: JsonWriter<Model> = {
     jsonObject(
-        "menu" to menuWriter(menu)
+        "name" to name,
+        "description" to description,
+        "count" to count,
+        "size" to size,
+        "enabled" to enabled,
+        "hidden" to hidden,
+        "tags" to jsonArray(tags),
+        "widgets" to jsonArray(widgets, widgetWriter)
+    )
+}
+
+val widgetWriter: JsonWriter<Widget> = {
+    jsonObject(
+        "type" to type,
+        "width" to width,
+        "height" to height
     )
 }
